@@ -1,0 +1,35 @@
+{
+  "name": "nicodinus/amphp-event_dispatcher",
+  "homepage": "https://github.com/nicodinus/amphp-event_dispatcher",
+  "description": "",
+  "type": "lib",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Nicodinus",
+      "email": "nicodinus@yandex.ru"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Nicodinus\\Async\\EventDispatcher\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Nicodinus\\Async\\EventDispatcher\\Tests\\": "tests"
+    }
+  },
+  "require": {
+    "php": ">=7.4",
+    "amphp/amp": "^2.6",
+    "psr/event-dispatcher": "^1.0"
+  },
+  "require-dev": {
+    "larapack/dd": "^1.1",
+    "phpunit/phpunit": "^9.5",
+    "amphp/phpunit-util": "^2.0"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
