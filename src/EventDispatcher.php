@@ -62,7 +62,13 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
 
             foreach ($this->getListenersForEvent($event) as $eventListener) {
 
-                $event = yield call($eventListener->getHandleCallback(), $event);
+                $result = yield call($eventListener->getHandleCallback(), $event);
+                if (!$result) {
+                    continue;
+                }
+
+                $event = $result;
+
                 if ($event instanceof StoppableEventInterface && $event->isPropagationStopped()) {
                     break;
                 }
