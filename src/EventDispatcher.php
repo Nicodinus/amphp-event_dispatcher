@@ -24,29 +24,31 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
     }
 
     /**
-     * @param object $event
+     * @param object|class-string $event
      * @param callable $callback
      *
      * @return EventListener
      */
-    public function listen(object $event, callable $callback): EventListener
+    public function listen($event, callable $callback): EventListener
     {
-        $eventId = \spl_object_hash($event);
+        if (\is_object($event)) {
+            $event = \get_class($event);
+        }
 
-        if (!isset($this->registry[$eventId])) {
-            $this->registry[$eventId] = [];
+        if (!isset($this->registry[$event])) {
+            $this->registry[$event] = [];
         }
 
         $listenerId = null;
-        $eventListener = new EventListener(function () use (&$eventId, &$listenerId) {
-            unset($this->registry[$eventId][$listenerId]);
-            if (\sizeof($this->registry[$eventId]) < 1) {
-                unset($this->registry[$eventId]);
+        $eventListener = new EventListener(function () use (&$event, &$listenerId) {
+            unset($this->registry[$event][$listenerId]);
+            if (\sizeof($this->registry[$event]) < 1) {
+                unset($this->registry[$event]);
             }
         }, $callback);
         $listenerId = \spl_object_hash($eventListener);
 
-        return $this->registry[$eventId][$listenerId] = $eventListener;
+        return $this->registry[$event][$listenerId] = $eventListener;
     }
 
     /**
@@ -79,7 +81,7 @@ final class EventDispatcher implements EventDispatcherInterface, ListenerProvide
      */
     public function getListenersForEvent(object $event): iterable
     {
-        $eventId = \spl_object_hash($event);
+        $eventId = \get_class($event);
 
         foreach ($this->registry[$eventId] ?? [] as $listener) {
             yield $listener;

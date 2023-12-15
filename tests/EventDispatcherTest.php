@@ -24,10 +24,14 @@ class EventDispatcherTest extends AsyncTestCase
 
         $events = [];
         for ($i = 0; $i < $eventsCount; $i++) {
-            $event = new class () implements StoppableEventInterface {
+
+            $events[$i] = new class () implements StoppableEventInterface {
 
                 /** @var bool */
                 public bool $isPropagationStopped = false;
+
+                /** @var int */
+                public int $id;
 
                 /** @var string|null */
                 public ?string $data = null;
@@ -41,25 +45,25 @@ class EventDispatcherTest extends AsyncTestCase
                 }
 
             };
-            $event->data = \bin2hex(\random_bytes(128));
-            $events[] = $event;
-
-            $eventDispatcher->listen($event, function (object $_event) use ($event) {
-                $this->assertSame($event, $_event);
-                $this->assertSame($event->data, $_event->data);
-                $_event->isPropagationStopped = true;
-                return $_event;
-            });
-
-            $eventDispatcher->listen($event, function () {
-                $this->fail("Test reach unreachable point!");
-            })->stopListen();
-
-            $eventDispatcher->listen($event, function () {
-                $this->fail("Test reach unreachable point!");
-            });
+            $events[$i]->id = $i;
+            $events[$i]->data = \bin2hex(\random_bytes(128));
 
         }
+
+        $eventDispatcher->listen(\get_class($events[0]), function (object $event) use (&$events) {
+            $this->assertSame($events[$event->id]->data, $event->data);
+            $this->assertSame($events[$event->id], $event);
+            $event->isPropagationStopped = true;
+            return $event;
+        });
+
+        $eventDispatcher->listen(\get_class($events[0]), function () {
+            $this->fail("Test reach unreachable point!");
+        })->stopListen();
+
+        $eventDispatcher->listen(\get_class($events[0]), function () {
+            $this->fail("Test reach unreachable point!");
+        });
 
         foreach ($events as $event) {
             $event = yield $eventDispatcher->dispatch($event);
